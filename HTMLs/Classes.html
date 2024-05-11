@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Classes</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style type="text/css">body {
+background-color: #17171f;
+color: #f0f0f5;
+}
+</style>
+</head>
+<body>
+<h1 id="classes-in-c">Classes in C++</h1>
+<p><em>Picked from Lippman 5th edition</em></p>
+<hr />
+<h2 id="basic-syntax-and-concepts">Basic Syntax and Concepts</h2>
+<ul>
+<li>Member functions are defined similar to regular functions, but the declarations must occur inside the class definition.</li>
+<li>The functions may be defined outside, and those defined inside the class body are implicitly <code>inline</code>.</li>
+<li>Member functions called inside other member functions have this access through the <code>this</code> pointer.</li>
+<li>It is illegal to define a parameter or a vriable named <code>this</code>.</li>
+<li>The type of <code>this</code> is a const pointer to the nonconst version of the class type.</li>
+<li>This means that in general, we cannot call an ordinary member function on a const object.</li>
+<li>The way to indicate that the <code>this</code> pointer needs to be const is adding <code>const</code> in between the parameter list and the function body. For eg:</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1">    <span class="dt">double</span> Sales_data::avg_price() <span class="at">const</span> {</a>
+<a class="sourceLine" id="cb1-2" title="2">        ...</a>
+<a class="sourceLine" id="cb1-3" title="3">    }</a></code></pre></div>
+<ul>
+<li>For defining a class member function outsude the class, you need to validate it using the scope operator, <code>class_name::func()</code>.</li>
+<li>To return the object itself, you should <code>return *this</code>.</li>
+<li>One can also return an lvalue reference to the object.</li>
+<li>Non-member functions that are part of the interface are usually declared in the same header.</li>
+<li>Class object initialization is controlled through constructors. Constructors have no return type, and have the same name as the class.</li>
+<li>Constructors may not be declared const, as they invariably need to change the object.</li>
+<li>A default constructor is one that takes no arguments.</li>
+<li>The compiler supplies a special default constructor, the synthesized constructor, which is defined implictly if no constructor is defined explicitly by us. It works as:
+<ol type="1">
+<li>If there is an in-class initializer, use it.</li>
+<li>Otherwise, deault-initialize the member.</li>
+</ol></li>
+<li>If any constructor is defined explicitly, the synthesized constructor flies out.</li>
+<li>If a class has a member which is another class, which does not have any default constructor, the compiler cannot synthesize a constructor implicitly.</li>
+<li>If we want to define a default constructor which is the same as the synthesized one, and more constructors, we can write <code>Sales_data() = default;</code>. This can appear with the declarations inside or as a definition outside.</li>
+<li>The constructor can explicitly initialize the members instead of just assigning them, though the constructor initializer list.</li>
+<li>The constructor initializer list is a list of member names each followed by its initialized value in parantheses, separated by commas. It appears between the parameter list and the body. For eg:</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1">    Sales_data(<span class="at">const</span> std:string &amp;s): bookNo(s) {}</a></code></pre></div>
+<ul>
+<li>The constructor’s initializer list wins over te in-class initializer if both are present.</li>
+<li>It is usually better to use in-class initializer instead.</li>
+<li>Classes also define what happens on copy, assignment and destruction.</li>
+<li>Classes that deal with pointers, or dynamic memory, would need to redefine all of the above, and probably cannot use the synthesized versions.</li>
+<li>C++ uses access control specifiers to enforce encapsulation.</li>
+<li>struct deafults to public where as class defaults to private.</li>
+<li>A class can allow another class or nonmember function to access its nonpublic members by declaring them friends, basically by writing out the prototype preceded by the keyword <code>friend</code> in the class definition. For eg:</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1">    <span class="kw">friend</span> Sales_data add(<span class="at">const</span> Sales_data &amp;, <span class="at">const</span> Sales_data &amp;);</a></code></pre></div>
+<ul>
+<li>The friendship is not affected by the access modifier of where it is declared.</li>
+<li>We also need to declare the function outside separately, a friend declaration is not a declaration.</li>
+<li>A class can also define local names for types, using <code>typedef</code>. They should appear before they are used.</li>
+<li>For a function defined outside, we can declare it inline either during the declaration or during the definition outside.</li>
+<li>It is better to define inline functions in the corresponding class header.</li>
+<li>Member functions can also be overloaded.</li>
+<li>Some datamembers must be allowed to change, even inside a const object. Such datamembers need to be declared <code>mutable</code>.</li>
+<li>In-class initializers could also be brace initialized in nature.</li>
+<li>Functions that return a reference to <code>*this</code> allow for chaining of functions on them one after the other.</li>
+<li>We can overload a function based on just the constness of the <code>this</code> pointer. This will resolve by const objects calling one version and nonconst ones the other.</li>
+<li>Two classes with the same contents still define two different unrelated types.</li>
+<li>We can declare a class without defining it, by just writing <code>class Screen;</code>.</li>
+<li>This makes <code>Screen</code> an incomplete type. We can only define pointers or references to such types, and declare functions that use these.</li>
+<li>Data members of a class type need to have that class defined before they themselves are specified.</li>
+<li>We can declare an entire class as a friend, allowing all member functions of that class access to all of our members.</li>
+<li>We can also make a member function of another class a friend of ours, by scoping the function during the friend declaration.</li>
+<li>This requires a careful ordering:
+<ol type="1">
+<li>Define the other class and declare the function.</li>
+<li>Put a friend declaration for that member function in this class.</li>
+<li>Define the member function outside.</li>
+</ol></li>
+<li>Each class defines a scope, called the class scope.</li>
+<li>During a function definition outside the class, the return type comes before the function name, so if the return type is of a type defined by the class, you need to scope the return type also. This need not be done for the parameters.</li>
+<li>Compilers look at classes in two phases. First all declarations are compiled, then all definitions (function bodies).</li>
+<li>Names used in declarations still need to occur before they are used.</li>
+<li>Name lookup thus proceeds as:
+<ol type="1">
+<li>the part of the function code seen yet.</li>
+<li>The whole code of the class definition.</li>
+<li>Surrounding scopes.</li>
+</ol></li>
+<li>We can override 1 and get to 2 by using scoping.</li>
+<li>The constructor initializer is needed for types which need to be initialized distinct from assignment. This is true for const types and reference types.</li>
+<li>The order of member initialization is not the same as that specified in the constructor initializer list, but rather follows the order in which they appear in the class definition.</li>
+<li>This becomes important when one datamember is initialized in terms of others.</li>
+<li>A constructor with default arguments for all parameters also ends up defining the default constructor.</li>
+</ul>
+</body>
+</html>
