@@ -198,3 +198,10 @@ Functions
     4. Arithmetic or pointer conversion.
     5. Class type conversion.
 - Here, const conversions mean low-level constness, promotion means the process of making everything `int` and pointer conversion means casts to stuff like `void*` or from 0 to a pointer type.
+- A pointer to function is generally declared as `return_type (*func)(params)`. Notice the difference from function returning pointer to array.
+- Both `a = func` and `a = &func` do the same thing.
+- Both `a()` and `(*a)()` are also equivalent.
+- There are no conversions between pointers to functions.
+- When assigning function pointers among overloaded functions, only exact matches are considered.
+- We can define functions that take pointers to functions, and return pointers to functions.
+- One can use auto+decltype or typedefs to make these declarations simpler.

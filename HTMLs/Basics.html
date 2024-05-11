@@ -268,7 +268,30 @@ color: #f0f0f5;
 <li>Looks like an inline function call: <code>assert (expr)</code>.</li>
 <li>A preprocessor variable called <code>NDEBUG</code> can toggle the execution of <code>assert</code>.</li>
 <li>By default <code>NDEBUG</code> is not defined, so <code>assert</code> runs. By adding a flag like <code>-D NDEBUG</code> during compilation, we can turn off all <code>assert</code>s.</li>
-<li>The compielr also provides several local variables like <code>__func__</code> which can be used duing deebugging.</li>
+<li>The compielr also provides several local variables like <code>__func__</code> which can be used duing debugging.</li>
+<li>To do function matching, the compiler runs a number of phases:
+<ol type="1">
+<li>Candidate functions: set of all functions visible (from the latest scope where any function of that name is visible).</li>
+<li>Viable functions: set of all functions which have correct number of arguments and the types can be matched, maybe through conversions.</li>
+<li>Get a best match, if one does not exist, call it ambigous and terminate.</li>
+</ol></li>
+<li>A function to call matching is best if the match for each argument is no worse than for any other viable function, and there is atleast one argument that has a strictly better match over each of the other viable functions.</li>
+<li>Argument matchings are ranked as follows:
+<ol type="1">
+<li>An exact match: identical, array or function to pointer degradation, or top-level consts get kicked.</li>
+<li>Match through const conversion.</li>
+<li>Match thorugh promotion.</li>
+<li>Arithmetic or pointer conversion.</li>
+<li>Class type conversion.</li>
+</ol></li>
+<li>Here, const conversions mean low-level constness, promotion means the process of making everything <code>int</code> and pointer conversion means casts to stuff like <code>void*</code> or from 0 to a pointer type.</li>
+<li>A pointer to function is generally declared as <code>return_type (*func)(params)</code>. Notice the difference from function returning pointer to array.</li>
+<li>Both <code>a = func</code> and <code>a = &amp;func</code> do the same thing.</li>
+<li>Both <code>a()</code> and <code>(*a)()</code> are also equivalent.</li>
+<li>There are no conversions between pointers to functions.</li>
+<li>When assigning function pointers among overloaded functions, only exact matches are considered.</li>
+<li>We can define functions that take pointers to functions, and return pointers to functions.</li>
+<li>One can use auto+decltype or typedefs to make these declarations simpler.</li>
 </ul>
 </body>
 </html>
