@@ -1,12 +1,14 @@
 #include <iostream>
 using namespace std;
 
-void print(const char *s) {
-    printf(s);
+void f(int * const arr) {
+    printf("Const");
+}
+
+void f(const int *arr) {
+    printf("Arr");
 }
 
 int main() {
-    char* charArray = new char[12]{"Hello World"};
-    print(charArray);
-    return 0;
+    f(new const int[12]{0});
 }

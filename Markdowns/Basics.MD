@@ -146,3 +146,55 @@ Functions
     err_msg({"hello", s});
 ```
 - We can instead use ellipses to interface with C code, but isn't recommended, since varargs objects are usually not copied correctly under C++.
+- To terminate execution of a function with no return value, one can use `return;`
+- Otherwise every return must return a value of the soecified type, or which can be implicitly converted.
+- A compiler may not always be able to check if all possible flows always end in a return. If this happens, runtime behavior is not defined.
+- When a function returns a reference, it is specified by the return type in the prototype of the function.
+- Never return a pointer or a reference to a local object.
+- We can chain together method calls left-associatively: `a.foo().bar()`.
+- Calls to functions that return references are lvalue, others are rvalue. The lvalue can be placed on the lhs of an assignment: `get(vec, 0) = 'A'`.
+- We cant do it if the return type is a const reference.
+- One can also return a `initializer_list`, which will be used to initialize the temporary return object.
+- The `main` function is allowed to terminate without a return, in which case it is assumed to return 0.
+- `main` is not allowed to call itself in general.
+- It is usually convenient to use typedefs when returning pointer to arrays, but the general syntax looks like `type (*function(params)) [dimension]`.
+- One can also use the trailing return type for declaring function prototypes: `auto func(params) -> ret_type`. For instance, `auto foo(int i) -> int (*)[10]`.
+- One can also use `decltype` to simplify some declarations.
+- Functions with the same name but different parameters are said to be overloaded, but note that the `main` function cannot be overloaded.
+- The functions may not differ only in their return types.
+- Parameters differing only in their name or in type aliasing or top level consts are not different.
+- When low-level consts come in the picture, it is clear what happens on const arguments. On nonconst arguments, the compiler prefers to call the nonconst version of the function.
+- The compiler does function matching to consult which function to call.
+- A basic rule is that name lookup happens before type checking. This means that names do not overload across scopes. The compiler will stick with the earliest scope where it finds any match.
+- This means that even if an enclosing scope has a declaration which might match, the compiler will ignore it.
+- Default arguments can be specified as initializers in the prototype of the function.
+- A parameter with default arguments needs all parameters to its right to also have default arguments.
+- One can specify the default argument for any parameter at only place (declaration).
+- Consider adding default arguments as part of the declarations in the header.
+- Local arguments may not be used as default arguments, apart from this restriction any expression works. The argument is calculated at runtime, and even if the variable is redefined in the inner scope (where the function is called with default arguments), the outer variable is used.
+- A function may be decared inline, which is a reuest to the compiler to expand it in-place when called.
+- A function is declared as inline by putting `inline` in front of the return type.
+- Similarly a function may be decalred `constexpr`.
+- A constexpr function is one that can be used in a constant expression.
+- A constexpr function must have a single return statement, and the return type and type of each parameter must be a literal type (as in simple enough for a constexpr to have this type).
+- The return value need not be a constant expression, and the body may contain other statements as long as they have no run time consequences.
+- These functions can now be used in expressions where contexpr is needed, like array definitions.
+- Inline and constexpr functions may be defined multiple times, but all must match exactly.
+- Usually this means we put them in headers.
+- The `assert` preprocessor macros can be used to ensure that a condition we expect to be true is actually true at runtime during development.
+- Looks like an inline function call: `assert (expr)`.
+- A preprocessor variable called `NDEBUG` can toggle the execution of `assert`.
+- By default `NDEBUG` is not defined, so `assert` runs. By adding a flag like `-D NDEBUG` during compilation, we can turn off all `assert`s.
+- The compielr also provides several local variables like `__func__` which can be used duing debugging.
+- To do function matching, the compiler runs a number of phases:
+    1. Candidate functions: set of all functions visible (from the latest scope where any function of that name is visible).
+    2. Viable functions: set of all functions which have correct number of arguments and the types can be matched, maybe through conversions.
+    3. Get a best match, if one does not exist, call it ambigous and terminate.
+- A function to call matching is best if the match for each argument is no worse than for any other viable function, and there is atleast one argument that has a strictly better match over each of the other viable functions.
+- Argument matchings are ranked as follows:
+    1. An exact match: identical, array or function to pointer degradation, or top-level consts get kicked.
+    2. Match through const conversion.
+    3. Match thorugh promotion.
+    4. Arithmetic or pointer conversion.
+    5. Class type conversion.
+- Here, const conversions mean low-level constness, promotion means the process of making everything `int` and pointer conversion means casts to stuff like `void*` or from 0 to a pointer type.
