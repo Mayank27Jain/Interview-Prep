@@ -140,6 +140,95 @@ color: #f0f0f5;
 <li>Anything can go into after the colon <code>:</code>, that defines <code>begin</code> and <code>end</code>.</li>
 <li>This allows for braced initializer list, arrays, and vectors etc-.</li>
 </ul>
+<h4 id="type-conversions">Type conversions</h4>
+<ul>
+<li>Implicit conversoins happen without programmer knowledge, and occur at:
+<ol type="1">
+<li>Different integral types are promoted to a common large integral type in an expression.</li>
+<li>In conditions, non-bool are convereted to bool</li>
+<li>In initializations, the initializer is converted to the type of the lhs.</li>
+<li>For operands of mixed types on arithmetic operators, they are converted to a common type.</li>
+<li>During function calls.</li>
+</ol></li>
+<li>Arithmetic conversions usually happen in two steps, first to integral level and then higher. Unsigned vs signed is often machine dependent.</li>
+<li>Array to pointer conversions are frequent wherever demanded. Not done only when <code>decltype</code> is used.</li>
+<li>0 and nullptr can convert to any pointer type, a pointer to nonconst can convert to <code>void*</code> and any pointer can convert to <code>const void *</code>. Inheritance also allows for a few.</li>
+<li>Pointer to nonconst can convert into pointer to const.</li>
+<li>Classes themselves can selectively define some conversions.</li>
+<li>Type casts give a way to do explicit type conversions, could be <code>static_cast</code>, <code>const_cast</code> or <code>reinterpret_cast</code></li>
+</ul>
 <h2 id="functions">Functions</h2>
+<ul>
+<li>A function is a block of code with a name, usually called using the call operator <code>()</code>.</li>
+<li>During a function call, function parameters are initialized and then control is transferred.</li>
+<li>Execution ends when a return type statement is found</li>
+<li>Arguments provide values for the initialization of the parameters.</li>
+<li>An empty parameter list still needs to be specified as <code>()</code>.</li>
+<li>Might instead say <code>void f(void)</code>.</li>
+<li>Need to specify type of each parameter separately.</li>
+<li>Unused parameters can be left nameless.</li>
+<li>The return type of a function cannot be an array or a function,but it could be a pointer to those.</li>
+<li>Scope: part of program text where name is visible, lifetime: part of execution that object exists.</li>
+<li>Parameters and other local variables are automatic objects, meaning they lose identity after block scope is over.</li>
+<li>To have an object whose lifetime continues across calls to the function, define it as <code>static</code>. Initialized before the first time it is defined. Eg:</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1">    <span class="dt">size_t</span> count_calls() {</a>
+<a class="sourceLine" id="cb2-2" title="2">        <span class="at">static</span> <span class="dt">size_t</span> ctr = <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb2-3" title="3">        <span class="cf">return</span> ++ctr;</a>
+<a class="sourceLine" id="cb2-4" title="4">    }</a></code></pre></div>
+<ul>
+<li>A function declaration is definition minus the body. Also called function prototype.</li>
+<li>Declare the functions in header and define them in a seperate source code file that imports this header.</li>
+<li>To enable seperate compilation, provide <code>-c</code> flag which gives <code>.o</code> as output. Link the object to files together to get <code>./a.out</code>.</li>
+<li>Arguments can be passed by reference by declaring the parameter as a reference type.</li>
+<li>Pointers give indirect access to shared data.</li>
+<li>It is ineffeicient and sometimes impossible to copy objects, hence it is safer to use references.</li>
+<li>Unchanged reference parameters should be declared const.</li>
+<li>References can also be useed to return additional information to the calling environment.</li>
+<li>Just as in normal initialization, top-level consts are ignored between parameter and argument.</li>
+<li>This means that the following functions cannot be distinguished so the second declaration is in error:</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1">    <span class="dt">void</span> fcn(<span class="at">const</span> <span class="dt">int</span> i);</a>
+<a class="sourceLine" id="cb3-2" title="2">    <span class="dt">void</span> fcn(<span class="dt">int</span> i);</a></code></pre></div>
+<ul>
+<li>The basic general rules for initialization are:
+<ol type="1">
+<li>ignore top level consts</li>
+<li>can use nonconst argument for low level const parameter, but not vice versa</li>
+<li>plain reference must be initialized by object of exact same type (cannot pass literals, expressions, or even const references)</li>
+</ol></li>
+<li>So always try to make references const if possible.</li>
+<li>Arrays interefere in two ways: you cannot copy them and they usually devolve into pointers.</li>
+<li>So the following three are the same:</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1">    <span class="dt">void</span> print(<span class="at">const</span> <span class="dt">int</span> *);</a>
+<a class="sourceLine" id="cb4-2" title="2">    <span class="dt">void</span> print(<span class="at">const</span> <span class="dt">int</span>[]);</a>
+<a class="sourceLine" id="cb4-3" title="3">    <span class="dt">void</span> print(<span class="at">const</span> <span class="dt">int</span>[<span class="dv">10</span>]);</a></code></pre></div>
+<ul>
+<li>This means size of the array is unknown to function, specified through one of three ways:
+<ol type="1">
+<li>Special marker after last object of array.</li>
+<li>Sentinel pointer also passed.</li>
+<li>Explicit size parameter passed.</li>
+</ol></li>
+<li>The same discussion of references applies to pointers, since pointers to const can accept nonconst, but not vice-versa.</li>
+<li>To define an array reference parameter, we can use <code>void print(int (&amp;arr)[10])</code>, where the bracket is important.</li>
+<li>To pass a multidimensional array, we would have to essemtially pass a pointer to the first element of the outermost array, which means you need to know the dimensions of all the rest of the arrays.</li>
+<li>Command line parameters to functions are passed to main through the “explicit size parameter” approach <code>int main(int argc, char **argv)</code>.</li>
+<li>To pass varying number of arguments of the same type <code>a</code>, you can use <code>initializer_list&lt;a&gt;</code>. It provides functionalities to assign the list, get the begin and end iterators (for range based for loops) and getting the size.</li>
+<li>When you want to pass multiple values to a <code>initializer_list</code> type parameter, enclose them in curvy braces.</li>
+<li>An example:</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1">    <span class="dt">void</span> err_msg(initializer_list&lt;string&gt; il) {</a>
+<a class="sourceLine" id="cb5-2" title="2">        <span class="cf">for</span> (<span class="kw">auto</span> &amp;s: il) {</a>
+<a class="sourceLine" id="cb5-3" title="3">            cout &lt;&lt; s &lt;&lt; <span class="st">&quot; &quot;</span>;</a>
+<a class="sourceLine" id="cb5-4" title="4">        }</a>
+<a class="sourceLine" id="cb5-5" title="5">        cout &lt;&lt; endl;</a>
+<a class="sourceLine" id="cb5-6" title="6">    }</a>
+<a class="sourceLine" id="cb5-7" title="7">    string s = <span class="st">&quot;bye&quot;</span>;</a>
+<a class="sourceLine" id="cb5-8" title="8">    err_msg({<span class="st">&quot;hello&quot;</span>, s});</a></code></pre></div>
+<ul>
+<li>We can instead use ellipses to interface with C code, but isn’t recommended, since varargs objects are usually not copied correctly under C++.</li>
+</ul>
 </body>
 </html>
