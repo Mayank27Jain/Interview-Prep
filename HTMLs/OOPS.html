@@ -162,5 +162,69 @@ color: #f0f0f5;
 <li>We can redefine some of these inherited constructors.</li>
 </ul>
 <h2 id="templates">Templates</h2>
+<ul>
+<li>A template definition starts with <code>template &lt;...&gt;</code>, within the brackets is the template parameters list.</li>
+<li>To instantiate a template function, the compiler tries to use the arguments of the call to deduce the template arguments for us. For eg:</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1">    <span class="co">// template defn</span></a>
+<a class="sourceLine" id="cb4-2" title="2">    <span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt; <span class="dt">int</span> compare(<span class="at">const</span> T &amp;v1, <span class="at">const</span> T &amp;v2) {</a>
+<a class="sourceLine" id="cb4-3" title="3">        ...</a>
+<a class="sourceLine" id="cb4-4" title="4">    }</a>
+<a class="sourceLine" id="cb4-5" title="5">    compare(<span class="dv">1</span>, <span class="dv">0</span>); <span class="co">// T is int</span></a>
+<a class="sourceLine" id="cb4-6" title="6">    compare(ivec1, ivec2); <span class="co">// T is vector&lt;int&gt;</span></a></code></pre></div>
+<ul>
+<li>The type parameter(s), usually referenced as <code>T</code>, can be used as a normal type within the function, and can also define the paramter or return type.</li>
+<li>One may use <code>class</code> instead of <code>typename</code> also.</li>
+<li>Other kinds of parameters to templates can be nontype, but these still need to be calculable at compile time (hence <code>constexpr</code>).</li>
+<li>The template nontype parameter acts as a constant value inside the template definition.</li>
+<li>The template part of the function must come even before the inline or constexpr qualifiers.</li>
+<li>Compiler generates code from a template only when it is instantiated.</li>
+<li>To generate an instantiation, the compmiler needs the complete code. Usually, this means template functions need to be completely added in the headers.</li>
+<li>A class template is ablueprint for generating classes.</li>
+<li>Compiler cannot generally deduce types of the class template type parameters.</li>
+<li>We need to explicitly provide the template arguments, eg: <code>vector&lt;int&gt;</code>.</li>
+<li>A member function of a template class defined outside needs to again be templatized. For eg:</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1">    <span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt; <span class="dt">ret_type</span> Class&lt;T&gt;::func_name(params)</a></code></pre></div>
+<ul>
+<li>Constructors will look like <code>template &lt;typename T&gt; Class&lt;T&gt;::Class(params): ... {}</code>.</li>
+<li>A member function is instantiated only if the code uses it. This lets you instantiate some classes which may not really be correct.</li>
+<li>Inside the template class definition, you can use the name of the class without arguments.</li>
+<li>Class templates can control which classes to make friends. Nontemplated friend declarations give the friend access to all instantiations.</li>
+<li>The following gives one-to-one friendship:</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb6-1" title="1">    <span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt; Class {</a>
+<a class="sourceLine" id="cb6-2" title="2">        <span class="kw">friend</span> <span class="kw">class</span> OtherClass&lt;T&gt;;</a>
+<a class="sourceLine" id="cb6-3" title="3">        <span class="kw">friend</span> <span class="dt">ret_type</span> func&lt;T&gt;(params&lt;T&gt;);</a>
+<a class="sourceLine" id="cb6-4" title="4">    };</a></code></pre></div>
+<ul>
+<li>For the above to work, the template declaration for <code>OtherClass</code> must already be present above.</li>
+<li>To allow cross friendships and access, use:</li>
+</ul>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb7-1" title="1">    <span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt; Class {</a>
+<a class="sourceLine" id="cb7-2" title="2">        <span class="kw">template</span> &lt;<span class="kw">typename</span> X&gt; <span class="kw">friend</span> <span class="kw">class</span> OtherClass&lt;X&gt;; <span class="co">// the &lt;X&gt; is not needed</span></a>
+<a class="sourceLine" id="cb7-3" title="3">    };</a></code></pre></div>
+<ul>
+<li>We can also make <code>T</code> itself a friend, <code>friend T</code>.</li>
+<li>We can also define template type alias:</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb8-1" title="1">    <span class="kw">template</span>&lt;<span class="kw">typename</span> T&gt; <span class="kw">using</span> twin&lt;T&gt; = pair&lt;T, T&gt;;</a></code></pre></div>
+<ul>
+<li>For static member, each instantiation has its own copy of the static member.</li>
+<li>We need to define this similar to a member function template:</li>
+</ul>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb9-1" title="1">    temaplte &lt;<span class="kw">typename</span> T&gt; <span class="dt">static_type</span> Class&lt;T&gt;::member_name = initializer;</a></code></pre></div>
+<ul>
+<li>A static member is instantiated only if it is used (just like the functions).</li>
+<li>We cannot reuse the typename within the declaration, as in <code>template &lt;typename U, typename U&gt;</code> is illegal.</li>
+<li>Inside the templated class, the compiler does not know if <code>T::mem</code> defines a type or a static data member. By default it is assumed not to be a type.</li>
+<li>If it is intended to be a type, explicitly say this as in <code>template &lt;typename T&gt; typename T::mem ...</code>.</li>
+<li>We can also provide default arguments to the template arguments, like <code>template &lt;typename T, typename F = less&lt;T&gt;&gt;</code>. To use all defaults in a class template, use <code>className&lt;&gt;</code>.</li>
+<li>When defining template functions inside template classes outside the class, use two different <code>template &lt;typename&gt;</code> sets, first the class and then the function.</li>
+<li>To avoid the overhead of multiple instantiations, we use <code>extern template ...</code> and <code>template ...</code> where <code>...</code> looks like <code>ret_type func_name(params)</code> or <code>class className&lt;type&gt;</code>.</li>
+<li>When extern is used, we ask the compiler to trust us and a nonextern usage is there somwhere in the final code.</li>
+<li>The instantiation definition ends up defining all member functions and static members and stuff.</li>
+<li>MORE STUFF COMING UP</li>
+</ul>
 </body>
 </html>

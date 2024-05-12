@@ -85,3 +85,66 @@ Object Oriented Programming
 
 Templates
 ---
+
+- A template definition starts with `template <...>`, within the brackets is the template parameters list.
+- To instantiate a template function, the compiler tries to use the arguments of the call to deduce the template arguments for us. For eg:
+```C++
+    // template defn
+    template <typename T> int compare(const T &v1, const T &v2) {
+        ...
+    }
+    compare(1, 0); // T is int
+    compare(ivec1, ivec2); // T is vector<int>
+```
+- The type parameter(s), usually referenced as `T`, can be used as a normal type within the function, and can also define the paramter or return type.
+- One may use `class` instead of `typename` also.
+- Other kinds of parameters to templates can be nontype, but these still need to be calculable at compile time (hence `constexpr`).
+- The template nontype parameter acts as a constant value inside the template definition.
+- The template part of the function must come even before the inline or constexpr qualifiers.
+- Compiler generates code from a template only when it is instantiated.
+- To generate an instantiation, the compmiler needs the complete code. Usually, this means template functions need to be completely added in the headers.
+- A class template is ablueprint for generating classes.
+- Compiler cannot generally deduce types of the class template type parameters.
+- We need to explicitly provide the template arguments, eg: `vector<int>`.
+- A member function of a template class defined outside needs to again be templatized. For eg:
+```C++
+    template <typename T> ret_type Class<T>::func_name(params)
+```
+- Constructors will look like `template <typename T> Class<T>::Class(params): ... {}`.
+- A member function is instantiated only if the code uses it. This lets you instantiate some classes which may not really be correct.
+- Inside the template class definition, you can use the name of the class without arguments.
+- Class templates can control which classes to make friends. Nontemplated friend declarations give the friend access to all instantiations.
+- The following gives one-to-one friendship:
+```C++
+    template <typename T> Class {
+        friend class OtherClass<T>;
+        friend ret_type func<T>(params<T>);
+    };
+```
+- For the above to work, the template declaration for `OtherClass` must already be present above.
+- To allow cross friendships and access, use:
+```C++
+    template <typename T> Class {
+        template <typename X> friend class OtherClass<X>; // the <X> is not needed
+    };
+```
+- We can also make `T` itself a friend, `friend T`.
+- We can also define template type alias:
+```C++
+    template<typename T> using twin<T> = pair<T, T>;
+```
+- For static member, each instantiation has its own copy of the static member.
+- We need to define this similar to a member function template:
+```C++
+    temaplte <typename T> static_type Class<T>::member_name = initializer;
+```
+- A static member is instantiated only if it is used (just like the functions).
+- We cannot reuse the typename within the declaration, as in `template <typename U, typename U>` is illegal.
+- Inside the templated class, the compiler does not know if `T::mem` defines a type or a static data member. By default it is assumed not to be a type.
+- If it is intended to be a type, explicitly say this as in `template <typename T> typename T::mem ...`.
+- We can also provide default arguments to the template arguments, like `template <typename T, typename F = less<T>>`. To use all defaults in a class template, use `className<>`.
+- When defining template functions inside template classes outside the class, use two different `template <typename>` sets, first the class and then the function.
+- To avoid the overhead of multiple instantiations, we use `extern template ...` and `template ...` where `...` looks like `ret_type func_name(params)` or `class className<type>`.
+- When extern is used, we ask the compiler to trust us and a nonextern usage is there somwhere in the final code.
+- The instantiation definition ends up defining all member functions and static members and stuff.
+- MORE STUFF COMING UP
