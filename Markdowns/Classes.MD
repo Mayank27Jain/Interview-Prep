@@ -81,3 +81,37 @@ Basic Syntax and Concepts
 - The order of member initialization is not the same as that specified in the constructor initializer list, but rather follows the order in which they appear in the class definition.
 - This becomes important when one datamember is initialized in terms of others.
 - A constructor with default arguments for all parameters also ends up defining the default constructor.
+- You could also allow constructors to delegate initializations to other constructors, by syntax like `Sales_data() : Sales_data("", 0, 0) {}`. This calls another constructor for the initialization.
+- The code of the delegated-to constructor also runs, not just the initializer list.
+- Default initialization happens when:
+    1. nonstatic variables or arrays are defined without initializers at block scope
+    2. when a class that itself has a class type member uses synthetic constructor
+    3. when members of class type are not initialized in a constructor initializer list
+- Value initialization happens when:
+    1. Array  initialization provides too few initializers
+    2. When we define a local static without an initializer
+    3. When we explicitly request so by writing `T()`.
+- Note that `Sales_data obj()` defines a function and not an object.
+- A constructor with a single argument also defines a conversion from that type.
+- During function calls, only one class-type conversion is allowed.
+- We can suppress these implicit conversions by adding `explicit` in front of the function declaration inside the class.
+- We can still use these functions for conversions if we force the conversion explicitly.
+- An aggregate class is one which has all data-members public, does not define any constructors, has no in-class initializers and has no base class or virtual functions.
+- You can initialize objects of an aggregate class using brace initialization, the initializers must appear in order of declaration of the data members.
+- A literal class is one whose objects can be used in `constexpr` type expressions.
+- Such classes may have member functions that are `constexpr`.
+- An aggregate class with all datamembers of literal types is a literal class. A nonaggregate class can be literal if:
+    1. The datamembers have literal type.
+    2. The in-class initializers must be a constant expression.
+    3. The class must have atleast one `constexpr` constructor (which is usually empty).
+    4. The class must use the default destructor.
+- A datamember associated with the class itself and not inidividual objects is called static.
+- To declare this add keyword `static` in front of the datamember declaration.
+- We can also have static member functions, which will not have access to the `this` pointer. For the same reason they cannot be declared `const`. We can still refer to static datamembers inside the body.
+- Static member functions can be defined like normal member functions. But static datamembers need to be defined outside the class explicitly, like how class member functions defined outside the class look like. For eg.
+```C++
+    double Account::interestRate = 5;
+```
+- The definition can occur only once, so it is best to put this line in the file with the definitions of the member functions.
+- Constant integral static members can have in-class initializers, and may skip the definition, but this is not good practice. If an in-class initializr is given, the definition must not have any initializer: `const int Account::period;`
+- A static member has lesser restrictions, as in it can have an incomplete type and it can be used as the default argument in member functions.

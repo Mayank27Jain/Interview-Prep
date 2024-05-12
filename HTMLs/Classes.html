@@ -165,6 +165,46 @@ color: #f0f0f5;
 <li>The order of member initialization is not the same as that specified in the constructor initializer list, but rather follows the order in which they appear in the class definition.</li>
 <li>This becomes important when one datamember is initialized in terms of others.</li>
 <li>A constructor with default arguments for all parameters also ends up defining the default constructor.</li>
+<li>You could also allow constructors to delegate initializations to other constructors, by syntax like <code>Sales_data() : Sales_data(&quot;&quot;, 0, 0) {}</code>. This calls another constructor for the initialization.</li>
+<li>The code of the delegated-to constructor also runs, not just the initializer list.</li>
+<li>Default initialization happens when:
+<ol type="1">
+<li>nonstatic variables or arrays are defined without initializers at block scope</li>
+<li>when a class that itself has a class type member uses synthetic constructor</li>
+<li>when members of class type are not initialized in a constructor initializer list</li>
+</ol></li>
+<li>Value initialization happens when:
+<ol type="1">
+<li>Array initialization provides too few initializers</li>
+<li>When we define a local static without an initializer</li>
+<li>When we explicitly request so by writing <code>T()</code>.</li>
+</ol></li>
+<li>Note that <code>Sales_data obj()</code> defines a function and not an object.</li>
+<li>A constructor with a single argument also defines a conversion from that type.</li>
+<li>During function calls, only one class-type conversion is allowed.</li>
+<li>We can suppress these implicit conversions by adding <code>explicit</code> in front of the function declaration inside the class.</li>
+<li>We can still use these functions for conversions if we force the conversion explicitly.</li>
+<li>An aggregate class is one which has all data-members public, does not define any constructors, has no in-class initializers and has no base class or virtual functions.</li>
+<li>You can initialize objects of an aggregate class using brace initialization, the initializers must appear in order of declaration of the data members.</li>
+<li>A literal class is one whose objects can be used in <code>constexpr</code> type expressions.</li>
+<li>Such classes may have member functions that are <code>constexpr</code>.</li>
+<li>An aggregate class with all datamembers of literal types is a literal class. A nonaggregate class can be literal if:
+<ol type="1">
+<li>The datamembers have literal type.</li>
+<li>The in-class initializers must be a constant expression.</li>
+<li>The class must have atleast one <code>constexpr</code> constructor (which is usually empty).</li>
+<li>The class must use the default destructor.</li>
+</ol></li>
+<li>A datamember associated with the class itself and not inidividual objects is called static.</li>
+<li>To declare this add keyword <code>static</code> in front of the datamember declaration.</li>
+<li>We can also have static member functions, which will not have access to the <code>this</code> pointer. For the same reason they cannot be declared <code>const</code>. We can still refer to static datamembers inside the body.</li>
+<li>Static member functions can be defined like normal member functions. But static datamembers need to be defined outside the class explicitly, like how class member functions defined outside the class look like. For eg.</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1">    <span class="dt">double</span> Account::interestRate = <span class="dv">5</span>;</a></code></pre></div>
+<ul>
+<li>The definition can occur only once, so it is best to put this line in the file with the definitions of the member functions.</li>
+<li>Constant integral static members can have in-class initializers, and may skip the definition, but this is not good practice. If an in-class initializr is given, the definition must not have any initializer: <code>const int Account::period;</code></li>
+<li>A static member has lesser restrictions, as in it can have an incomplete type and it can be used as the default argument in member functions.</li>
 </ul>
 </body>
 </html>
