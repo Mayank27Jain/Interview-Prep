@@ -11,6 +11,69 @@
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
+  <style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
   <style type="text/css">body {
 background-color: #17171f;
 color: #f0f0f5;
@@ -18,9 +81,86 @@ color: #f0f0f5;
 </style>
 </head>
 <body>
-<h1 id="oops-and-generic-programming-in-c">OOPS and Generic Programming in C++</h1>
+<h1 id="oop-and-generic-programming-in-c">OOP and Generic Programming in C++</h1>
 <p><em>Picked from Lippman 5th edition</em></p>
 <hr />
 <h2 id="object-oriented-programming">Object Oriented Programming</h2>
+<ul>
+<li>Classes connected by inheritance tend to form a hierarchy.</li>
+<li>The base class defines as <code>virtual</code> those functions which it expects its derived classes to define for themselves.</li>
+<li>The derived class should specify which classes it wants to inherit from, as <code>class Derived : public Base</code>.</li>
+<li>The base class should define a virtual destructor.</li>
+<li>A nonstatic member function is declared virtual by adding <code>virtual</code> infront of the prototype, only in the declaration inside the class definition.</li>
+<li>Virtual functions are also implicitly virtual in the derived class.</li>
+<li>The protected access specifier lets only inherited classes access specific members.</li>
+<li>We can use any object of the derived type as if it were of the base type, through pointers or references.</li>
+<li>The derived class constructor needs to delegate base member initialization to a base type constructor in the initializer list.</li>
+<li>The base class is always initialized first.</li>
+<li>If a base class has a static member, there is only once instance of this type for the entire hierarchy.</li>
+<li>The declaration of a derived class should not contain the derivation list.</li>
+<li>A class must be defined, not just declared, before it can be used as a base class.</li>
+<li>We can prevent inheritance from a class by declaring it as <code>class Derived final : Base</code>.</li>
+<li>The static type is the one known to us at compile time.</li>
+<li>The dynamic type of an expression that is neither a reference nor a pointer is the exact same as its static type.</li>
+<li>There is no automatic conversion from base to derived.</li>
+<li>Usually we have references as the parameters in copy constructors and in assignment operators. This lets us exploit them in derived to base conversions implicitly.</li>
+<li>It is import to note that the copied object has been sliced down to the Base type.</li>
+<li>We must always define a virtual function, irrespective of wether it is actually used.</li>
+<li>If a virtual function is called thorugh an object (instead of a reference or pointer), then it is determined at compile time.</li>
+<li>A derived class function overriding a base function must have the exact same signature.</li>
+<li>The parameter types need to be the exact same, however the return types may be related through inheritance.</li>
+<li>To avoid mistakes like these where the derived class ends up defining a different function instead of overriding the one from the base class, make you intent clear in the derived class using <code>override</code> keyword at the end of the function declaration (after any const or reference qualifiers).</li>
+<li>We can also designate a function as <code>final</code> in the same syntax, and overriding a final function is an error.</li>
+<li>Virtual functions can have default arguments. When summoned from a pointer/reference to base class, the defaults specified in the base class declaration(s) are used.</li>
+<li>To call a specific version of a function, circumventing virtualness, we can use the scope operator, <code>Base::func(...)</code>.</li>
+<li>This might be useful if the derived class only needs to do a little more work than the base version of a function.</li>
+<li>Some base classes should not have any instantiations, these are called abstract base classes.</li>
+<li>This can be done by defining the offending function to be purely virtual. This done by setting its prototype to zero on the declaration inside the class body, <code>... = 0;</code>.</li>
+<li>Note that this does not mean you should not define constructors or stuff, the derived class would still need that.</li>
+<li>A derived class constructor should only delegate to its direct base class constructor, not anything up in the hierarchy.</li>
+<li>Protected members can be accessed thorugh derived classes. Also, friends and other such functions/classes can only access the stuff through the derived class.</li>
+<li>The type of inheritance of the derived class restricts access to the users of the derived class. Essentially it upperbounds the access in the order public &gt; protected &gt; private.</li>
+<li>Public inheritance also allows derived to base conversions in the user code.</li>
+<li>Protected inheritance allows children of the derived class to access this conversion, but not general users.</li>
+<li>Friendship is in no way inherited.</li>
+<li>Under protected or private inheritance, to exempt individual names to retain their original access modifiers in the base class (or change stuff altogether), we can add a using declaration:</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1">    access-modifier:</a>
+<a class="sourceLine" id="cb1-2" title="2">        <span class="kw">using</span> Base::type;</a></code></pre></div>
+<ul>
+<li>The access modifer determines the new access level.</li>
+<li>Class has default private inheritance, struct has default public inheritance.</li>
+<li>Derived classes define a nested scope inside the base class scope.</li>
+<li>A derived class reusing a base class name essentially hides that name in the derived class scope.</li>
+<li>As usual, name lookup happens before type checking.</li>
+<li>If you need to override only some functions in an overloaded set, put a using declaration in the derived class definition. . You cannot specify any parameter list, just the function name.</li>
+<li>Defining the destructor as virtual lets us delete objects of derived type from pointers of base type. This will end up turning off synthesized move.</li>
+<li>The default constructor of a derived class first calls the default constructor of the direct base class, which continues up the hierarchy.</li>
+<li>Treating base class subobject as a member object of the derived object gives correct answers for the synthesized copy constructor and assignment operator in general.</li>
+<li>Base class makes derived destructor =&gt; move not synthesized in base =&gt; move not synthesized in derived. So define move in base.</li>
+<li>To define a derived copy constructor, delegate to the appropriate base class constructor. We might have to use <code>std::move</code> for that. For eg:</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1">    D(<span class="at">const</span> D &amp;d): Base(d) {...};</a>
+<a class="sourceLine" id="cb2-2" title="2">    D(D &amp;&amp;d):Base(<span class="bu">std::</span>move(d)) {...};</a></code></pre></div>
+<ul>
+<li>Similar stuff for assignment:</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1">    D &amp;D::<span class="kw">operator</span>=(<span class="at">const</span> D &amp;rhs) {</a>
+<a class="sourceLine" id="cb3-2" title="2">        Base::<span class="kw">operator</span>=(rhs);</a>
+<a class="sourceLine" id="cb3-3" title="3">        ...</a>
+<a class="sourceLine" id="cb3-4" title="4">        <span class="cf">return</span> *<span class="kw">this</span>;</a>
+<a class="sourceLine" id="cb3-5" title="5">    }</a></code></pre></div>
+<ul>
+<li>No need to explicitly call base destructor, happens on its own.</li>
+<li>Calls to functions in constructor or destructor are to the type of the constructor/destructor itself.</li>
+<li>To inherit a constructor, write a line like <code>using Base::Base;</code> in the derived class definition.</li>
+<li>For each base constructor, the compiler generates a derived constructor of the form <code>derived(params):base(args){}</code>.</li>
+<li>The constructor using declaration does not change the access level of that constructor.</li>
+<li>A using declaration also cannot specifiy explicit or constexpr.</li>
+<li>If you have default arguments in the base, the derived gets multiple constructors, each successive one omitting one more parameter.</li>
+<li>The copy, move and default are not inherited.</li>
+<li>We can redefine some of these inherited constructors.</li>
+</ul>
+<h2 id="templates">Templates</h2>
 </body>
 </html>
