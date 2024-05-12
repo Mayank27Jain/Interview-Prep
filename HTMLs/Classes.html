@@ -206,5 +206,104 @@ color: #f0f0f5;
 <li>Constant integral static members can have in-class initializers, and may skip the definition, but this is not good practice. If an in-class initializr is given, the definition must not have any initializer: <code>const int Account::period;</code></li>
 <li>A static member has lesser restrictions, as in it can have an incomplete type and it can be used as the default argument in member functions.</li>
 </ul>
+<h2 id="copy-control">Copy Control</h2>
+<ul>
+<li>Consists of 5 elements:
+<ol type="1">
+<li>Copy constructor</li>
+<li>Move constructor</li>
+<li>Copy assignment</li>
+<li>Move assignment</li>
+<li>Destructor</li>
+</ol></li>
+<li>The copy constructor is used to initialize another object of the same class. It has the prototype <code>T(const T &amp;)</code>, although the const is not really needed.</li>
+<li>The synthesized copy constructor memberwise copies the object. Member of class type are copied through thier copy constructor, built-in types are copied directly.</li>
+<li>Arrays are copied element wise.</li>
+<li>Copy initialization happens at:
+<ol type="1">
+<li>defining variables using the <code>=</code> syntax.</li>
+<li>passing an object as argument to nonreference type parameter.</li>
+<li>return from a nonreference type function.</li>
+<li>brace initialization of the members of an array/aggregate class.</li>
+</ol></li>
+<li>Also used inside vector and such containers when using vaue initialization.</li>
+<li>The reason that the parameter of the copy constructor must be a reference is because otherwise the copying there would call the copy constructor again (recursion).</li>
+<li>Note that in cases like <code>T a = b</code> where <code>b</code> is of type <code>S</code>, the copy constructor will work, but we also need the constructor of type <code>T</code> from type <code>S</code>, and it should not be <code>explicit</code>.</li>
+<li>The overloaded assignment operator has the prototype <code>T&amp; operator=(const T &amp;)</code>, where again the const is not really needed.</li>
+<li>The this pointer binds to the lhs in this scenario.</li>
+<li>The synthesized copy assignment does assignment on each member.</li>
+<li>The destructor has the prototype <code>~T();</code>, and in the destructor the function body is executed first and then the members are destroyed in reverse order of their initialziation.</li>
+<li>Note that destructor of the pointer type does not call delete on it.</li>
+<li>Destructors are called when:
+<ol type="1">
+<li>variables are destroyed or go out of scope.</li>
+<li>members of a larger object are being destroyed as part of that destructor.</li>
+<li>elements when the container is destroyed.</li>
+<li>delete on dynamically allocated object.</li>
+<li>temporary objects at the end of the expression when they got created.</li>
+</ol></li>
+<li>The destructor does not run when the pointer goes out of scope.</li>
+<li>The synthesized destructor essentially has an empty body.</li>
+<li>The rule of three/five states that if you need one of these different from synthesized, you probably need them all.</li>
+<li>You can use the <code>=default</code> for any of the copy control members.</li>
+<li>If we want to explicitly avoid copies, simply not defining does not work, synthesized versions still exist.</li>
+<li>We can instead write out the function prototype and then follow it with <code>=delete</code>.</li>
+<li>The <code>=default</code> can occur outside the class body, but the <code>=delete</code> needs to occue=r on the first declaration.</li>
+<li>Never try to delete the destructor, then you want to be able to define objects or call <code>delete</code> on dynamically allocated versions of that object.</li>
+<li>The compiler might delete some of the copy control members instead of synthesizing them, if that does not make sense:
+<ol type="1">
+<li>if a member’s destructor is inaccessible, the synthesized destructor is deleted.</li>
+<li>if a member’s destructor or copy constructor is inaccessible, the synthesized copy constructor is deleted.</li>
+<li>same for the assignment, and it is also deleted if a member is const or reference type.</li>
+<li>the default constructor also gets deleted if any member’s destructor is deleted, or a reference member has no in-class initializer or has a const member whose type does not define a default constructor and does not have in-class initializer.</li>
+</ol></li>
+<li>The same behavior as <code>=delete</code> could be achieved by making the members as private and then not defining them.</li>
+<li>Many library functions would assume the presence of a swap function, which usually looks like:</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1">    <span class="kw">class</span> T {</a>
+<a class="sourceLine" id="cb5-2" title="2">        <span class="kw">friend</span> <span class="dt">void</span> swap(T &amp;, T &amp;);</a>
+<a class="sourceLine" id="cb5-3" title="3">    };</a>
+<a class="sourceLine" id="cb5-4" title="4">    <span class="kw">inline</span> <span class="dt">void</span> swap(T &amp;lhs, T &amp;rhs) {</a>
+<a class="sourceLine" id="cb5-5" title="5">        ...</a>
+<a class="sourceLine" id="cb5-6" title="6">    };</a></code></pre></div>
+<ul>
+<li>Remember that for using <code>swap</code> functions inside <code>swap</code>, it is better to put a <code>using std::swap</code> at the top and then use just <code>swap</code>. This makes sure the library <code>swap</code> is not used if you defined your own version.</li>
+<li>A good idea often used is to write</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb6-1" title="1">    T&amp; T::<span class="kw">operator</span>=(T rhs) { <span class="co">// rhs passed by value here</span></a>
+<a class="sourceLine" id="cb6-2" title="2">        swap(*<span class="kw">this</span>, rhs);</a>
+<a class="sourceLine" id="cb6-3" title="3">        <span class="cf">return</span> *<span class="kw">this</span>;</a>
+<a class="sourceLine" id="cb6-4" title="4">    }</a></code></pre></div>
+<h4 id="move-semantics">Move semantics</h4>
+<ul>
+<li>Some objects are deleted right after copying them, so we need a semantics to allow “moving” objects.</li>
+<li>To support this, the standard came up with rvalue references.</li>
+<li>Lvalue references cannot be bound to objects that require a conversion, literals, and rvalue expressions. Rvalue references can bind to all these but not lvalues.</li>
+<li>The syntax for declaring an rvalue reference is <code>int &amp;&amp;r = ...</code>.</li>
+<li>Subscript, dereference, assignment, prefix inc/dec and lvalue return function calls all result in lvalue expressions.</li>
+<li>Since rvalues are ephemeral in nature, we know they are about to be deleted.</li>
+<li>All variables, including rvalue references themselves, are lvalues as expressions.</li>
+<li>Calling <code>std::move()</code> on an lvalue tells the compiler to treat it as if it were an rvalue.</li>
+<li>After the move, we can only use the variable to assign a new value to it (or perhaps destroy it).</li>
+<li>To allow classes to use advantage of this, we need to define the move constructor and the move assignment operator.</li>
+<li>The move constructor and assignment operator need to ensure that the moved-from object is safe to be destroyed.</li>
+<li>The library does extra work if our move constructor (or assignment operator) can throw, so if it cannot, we should declare it as <code>noexcept</code>, by writing the keyword after the parameter list (before the constructor initializer list if any).</li>
+<li>We should specify <code>noexcept</code> on both declaration and definition.</li>
+<li>An example of this fact is that when <code>push_back</code> is called on vector and it runs out of memory, vector will move the objects only if they are sure to not throw any exception in that process.</li>
+<li>A moved-from object can be in any valid destructible state.</li>
+<li>If any of the destructor, copy constructor and copy assignment operator are defined, the compiler will not synthesize the move constructor and assignment operator.</li>
+<li>The synthesized move constructor and assignment operator are synthesized only when none of the copy-control methods are defined and all data members can be move constructed or assigned respectively.</li>
+<li>The move constructor or move assignment operator are usually not synthesized as deleted, to allow fallback onto copy construction and assignment. However if you explicitly demand through <code>=default</code>, then they will be synthesized as deleted.</li>
+<li>If you define the move constructor or assignment operator, the corresponding copy operations are synthesized by default as deleted.</li>
+<li>In general, rvalues are moved and lvalues are copied. If move operations are not defined, function matching will fallback to the copy format for rvalues.</li>
+<li>Interestingly, the copy-and-swap mechanics of the assignment operator can also handle the move semantics and copy semantics in one go.</li>
+<li>Other member functions can also benefit from rvalue and lvalue versions.</li>
+<li>We can also version functions based on wether the object on which they are called are lvalue or rvalue, in the same way we do for const. For eg.</li>
+</ul>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb7-1" title="1">    Foo sorted() <span class="at">const</span> &amp;;</a>
+<a class="sourceLine" id="cb7-2" title="2">    Foo sorted() &amp;&amp;;</a></code></pre></div>
+<ul>
+<li>There is no default in these, which means if you add a reference ualifier in one version, add a qualifier in all versions of that function.</li>
+</ul>
 </body>
 </html>

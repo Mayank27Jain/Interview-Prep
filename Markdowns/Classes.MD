@@ -115,3 +115,97 @@ Basic Syntax and Concepts
 - The definition can occur only once, so it is best to put this line in the file with the definitions of the member functions.
 - Constant integral static members can have in-class initializers, and may skip the definition, but this is not good practice. If an in-class initializr is given, the definition must not have any initializer: `const int Account::period;`
 - A static member has lesser restrictions, as in it can have an incomplete type and it can be used as the default argument in member functions.
+
+Copy Control
+---
+
+- Consists of 5 elements:
+    1. Copy constructor
+    2. Move constructor
+    3. Copy assignment
+    4. Move assignment
+    5. Destructor
+- The copy constructor is used to initialize another object of the same class. It has the prototype `T(const T &)`, although the const is not really needed.
+- The synthesized copy constructor memberwise copies the object. Member of class type are copied through thier copy constructor, built-in types are copied directly.
+- Arrays are copied element wise.
+- Copy initialization happens at:
+    1. defining variables using the `=` syntax.
+    2. passing an object as argument to nonreference type parameter.
+    3. return from a nonreference type function.
+    4. brace initialization of the members of an array/aggregate class.
+- Also used inside vector and such containers when using vaue initialization.
+- The reason that the parameter of the copy constructor must be a reference is because otherwise the copying there would call the copy constructor again (recursion).
+- Note that in cases like `T a = b` where `b` is of type `S`, the copy constructor will work, but we also need the constructor of type `T` from type `S`, and it should not be `explicit`.
+- The overloaded assignment operator has the prototype `T& operator=(const T &)`, where again the const is not really needed.
+- The this pointer binds to the lhs in this scenario.
+- The synthesized copy assignment does assignment on each member.
+- The destructor has the prototype `~T();`, and in the destructor the function body is executed first and then the members are destroyed in reverse order of their initialziation.
+- Note that destructor of the pointer type does not call delete on it.
+- Destructors are called when:
+    1. variables are destroyed or go out of scope.
+    2. members of a larger object are being destroyed as part of that destructor.
+    3. elements when the container is destroyed.
+    4. delete on dynamically allocated object.
+    5. temporary objects at the end of the expression when they got created.
+- The destructor does not run when the pointer goes out of scope.
+- The synthesized destructor essentially has an empty body.
+- The rule of three/five states that if you need one of these different from synthesized, you probably need them all.
+- You can use the `=default` for any of the copy control members.
+- If we want to explicitly avoid copies, simply not defining does not work, synthesized versions still exist.
+- We can instead write out the function prototype and then follow it with `=delete`.
+- The `=default` can occur outside the class body, but the `=delete` needs to occue=r on the first declaration.
+- Never try to delete the destructor, then you want to be able to define objects or call `delete` on dynamically allocated versions of that object.
+- The compiler might delete some of the copy control members instead of synthesizing them, if that does not make sense:
+    1. if a member's destructor is inaccessible, the synthesized destructor is deleted.
+    2. if a member's destructor or copy constructor is inaccessible, the synthesized copy constructor is deleted.
+    3. same for the assignment, and it is also deleted if a member is const or reference type.
+    4. the default constructor also gets deleted if any member's destructor is deleted, or a reference member has no in-class initializer or has a const member whose type does not define a default constructor and does not have in-class initializer.
+- The same behavior as `=delete` could be achieved by making the members as private and then not defining them.
+- Many library functions would assume the presence of a swap function, which usually looks like:
+```C++
+    class T {
+        friend void swap(T &, T &);
+    };
+    inline void swap(T &lhs, T &rhs) {
+        ...
+    };
+```
+- Remember that for using `swap` functions inside `swap`, it is better to put a `using std::swap` at the top and then use just `swap`. This makes sure the library `swap` is not used if you defined your own version.
+- A good idea often used is to write
+```C++
+    T& T::operator=(T rhs) { // rhs passed by value here
+        swap(*this, rhs);
+        return *this;
+    }
+```
+
+#### Move semantics
+
+- Some objects are deleted right after copying them, so we need a semantics to allow "moving" objects.
+- To support this, the standard came up with rvalue references.
+- Lvalue references cannot be bound to objects that require a conversion, literals, and rvalue expressions. Rvalue references can bind to all these but not lvalues.
+- The syntax for declaring an rvalue reference is `int &&r = ...`.
+- Subscript, dereference, assignment, prefix inc/dec and lvalue return function calls all result in lvalue expressions.
+- Since rvalues are ephemeral in nature, we know they are about to be deleted.
+- All variables, including rvalue references themselves, are lvalues as expressions.
+- Calling `std::move()` on an lvalue tells the compiler to treat it as if it were an rvalue.
+- After the move, we can only use the variable to assign a new value to it (or perhaps destroy it).
+- To allow classes to use advantage of this, we need to define the move constructor and the move assignment operator.
+- The move constructor and assignment operator need to ensure that the moved-from object is safe to be destroyed.
+- The library does extra work if our move constructor (or assignment operator) can throw, so if it cannot, we should declare it as `noexcept`, by writing the keyword after the parameter list (before the constructor initializer list if any).
+- We should specify `noexcept` on both declaration and definition.
+- An example of this fact is that when `push_back` is called on vector and it runs out of memory, vector will move the objects only if they are sure to not throw any exception in that process.
+- A moved-from object can be in any valid destructible state.
+- If any of the destructor, copy constructor and copy assignment operator are defined, the compiler will not synthesize the move constructor and assignment operator.
+- The synthesized move constructor and assignment operator are synthesized only when none of the copy-control methods are defined and all data members can be move constructed or assigned respectively.
+- The move constructor or move assignment operator are usually not synthesized as deleted, to allow fallback onto copy construction and assignment. However if you explicitly demand through `=default`, then they will be synthesized as deleted.
+- If you define the move constructor or assignment operator, the corresponding copy operations are synthesized by default as deleted.
+- In general, rvalues are moved and lvalues are copied. If move operations are not defined, function matching will fallback to the copy format for rvalues.
+- Interestingly, the copy-and-swap mechanics of the assignment operator can also handle the move semantics and copy semantics in one go.
+- Other member functions can also benefit from rvalue and lvalue versions.
+- We can also version functions based on wether the object on which they are called are lvalue or rvalue, in the same way we do for const. For eg.
+```C++
+    Foo sorted() const &;
+    Foo sorted() &&;
+```
+- There is no default in these, which means if you add a reference ualifier in one version, add a qualifier in all versions of that function.
